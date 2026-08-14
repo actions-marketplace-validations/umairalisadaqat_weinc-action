@@ -1,0 +1,69 @@
+name: "WeInc Website Builder"
+description: "Publish and manage WeInc projects, clients, templates, and analytics from CI via the WeInc Agency API."
+author: "WeInc (Websiteinc AI)"
+
+branding:
+  icon: "globe"
+  color: "purple"
+
+inputs:
+  api_key:
+    description: "WeInc organization API key (wk_...). Create one in your agency dashboard at https://my.we.inc"
+    required: true
+  command:
+    description: >-
+      What to do. One of: list-projects, get-project, create-project,
+      update-project, delete-project, list-clients, get-client, create-client,
+      list-templates, list-plans, get-analytics, list-webhooks
+    required: true
+  project_id:
+    description: "Project ID (for get-project, update-project, delete-project, get-analytics)"
+    required: false
+  client_id:
+    description: "Client ID (filter for list-projects, or target for get-client)"
+    required: false
+  client_email:
+    description: "Client email (required for create-project)"
+    required: false
+  name:
+    description: "Name (for create-project, update-project, create-client)"
+    required: false
+  description_text:
+    description: "Description (for create-project / update-project)"
+    required: false
+  template_id:
+    description: "Org template ID to clone files from (create-project)"
+    required: false
+  days:
+    description: "Look-back window in days for get-analytics"
+    required: false
+  api_url:
+    description: "API base URL"
+    required: false
+    default: "https://my.we.inc/api/v1"
+
+outputs:
+  json:
+    description: "Raw JSON response from the WeInc API"
+    value: ${{ steps.weinc.outputs.json }}
+  id:
+    description: "ID of the created or fetched resource, when applicable"
+    value: ${{ steps.weinc.outputs.id }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: weinc
+      shell: bash
+      env:
+        WEINC_API_KEY: ${{ inputs.api_key }}
+        WEINC_COMMAND: ${{ inputs.command }}
+        WEINC_PROJECT_ID: ${{ inputs.project_id }}
+        WEINC_CLIENT_ID: ${{ inputs.client_id }}
+        WEINC_CLIENT_EMAIL: ${{ inputs.client_email }}
+        WEINC_NAME: ${{ inputs.name }}
+        WEINC_DESCRIPTION: ${{ inputs.description_text }}
+        WEINC_TEMPLATE_ID: ${{ inputs.template_id }}
+        WEINC_DAYS: ${{ inputs.days }}
+        WEINC_API_URL: ${{ inputs.api_url }}
+      run: bash "${{ github.action_path }}/weinc-action.sh"
